@@ -32,22 +32,23 @@ namespace AI
         Choices list = new Choices();
         Grammar gm;
 
+        bool triggerByVoice = true;
 
         public SofiaAI()
         {
             InitializeComponent();
 
-            s.SelectVoiceByHints(VoiceGender.Neutral);
+            speech.SelectVoiceByHints(VoiceGender.Neutral);
             list.Add(File.ReadAllLines(Application.StartupPath + "/commands.txt"));
             gm = new Grammar(new GrammarBuilder(list));
 
             try
             {
-                sr.RequestRecognizerUpdate();
-                sr.LoadGrammar(gm);
-                sr.SpeechRecognized += Sr_SpeechRecognized;
-                sr.SetInputToDefaultAudioDevice();
-                sr.RecognizeAsync(RecognizeMode.Multiple);
+                speechRecognition.RequestRecognizerUpdate();
+                speechRecognition.LoadGrammar(gm);
+                speechRecognition.SpeechRecognized += Sr_SpeechRecognized;
+                speechRecognition.SetInputToDefaultAudioDevice();
+                speechRecognition.RecognizeAsync(RecognizeMode.Multiple);
             }
             catch
             {
@@ -55,24 +56,23 @@ namespace AI
             }
         }
 
-        SpeechSynthesizer s = new SpeechSynthesizer();
-        SpeechRecognitionEngine sr = new SpeechRecognitionEngine();
-        PromptBuilder pb = new PromptBuilder();
+        SpeechSynthesizer speech = new SpeechSynthesizer();
+        SpeechRecognitionEngine speechRecognition = new SpeechRecognitionEngine();
 
 
         private void button1_Click(object sender, EventArgs e)
         {
             System.Media.SoundPlayer player = new System.Media.SoundPlayer(Application.StartupPath + @"/beep.wav");
             player.Play();
-            s.SelectVoiceByHints(VoiceGender.Neutral);
+            speech.SelectVoiceByHints(VoiceGender.Neutral);
             isPressed = true;
             try
             {
-                sr.RequestRecognizerUpdate();
-                sr.LoadGrammar(gm);
-                sr.SpeechRecognized += Sr_SpeechRecognized;
-                sr.SetInputToDefaultAudioDevice();
-                sr.RecognizeAsync(RecognizeMode.Multiple);
+                speechRecognition.RequestRecognizerUpdate();
+                speechRecognition.LoadGrammar(gm);
+                speechRecognition.SpeechRecognized += Sr_SpeechRecognized;
+                speechRecognition.SetInputToDefaultAudioDevice();
+                speechRecognition.RecognizeAsync(RecognizeMode.Multiple);
             }
             catch
             {
@@ -82,7 +82,7 @@ namespace AI
 
         public void Say(string phrase)
         {
-            s.SpeakAsync(phrase);
+            speech.SpeakAsync(phrase);
             wake = false;
             isPressed = false;
         }
@@ -92,22 +92,25 @@ namespace AI
 
         private void Sr_SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
         {
-            string speechSaid = e.Result.Text;
+            string userSpeech = e.Result.Text;
             if (isPressed == false)
             {
-                if (speechSaid == "hey sofia")
+                if (triggerByVoice == true)
                 {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(Application.StartupPath + @"/beep.wav");
-                    player.Play();
-                    wake = true;
-                }
+                    if (userSpeech == "hey sofia")
+                    {
+                        System.Media.SoundPlayer player = new System.Media.SoundPlayer(Application.StartupPath + @"/beep.wav");
+                        player.Play();
+                        wake = true;
+                    }
+                }         
             }
 
-            if (speechSaid.Length > 1)
+            if (userSpeech.Length > 1)
             {
                 if (wake == true || isPressed == true)
                 {
-                    switch (speechSaid)
+                    switch (userSpeech)
                     {
                         case ("hi"):
                             Say("hi");
@@ -190,7 +193,13 @@ namespace AI
                             Say("Music paused");
                             keybd_event(VK_MEDIA_PLAY_PAUSE, 0, KEYEVENTF_EXTENTEDKEY, IntPtr.Zero);
                             break;
-
+                        case ("cancel"):
+                            Say("");
+                            break;
+                        case ("stop listening to me"):
+                            checkBox1.Checked = false;
+                            triggerByVoice = false;
+                            break;
                     }
                 }
             }
@@ -225,6 +234,33 @@ namespace AI
             Show();
             this.WindowState = FormWindowState.Normal;
             notifyIcon1.Visible = false;
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://github.com/sapirnoam");
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                triggerByVoice = true;
+            }
+            if(!checkBox1.Checked)
+            {
+                triggerByVoice = false;
+            }
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
