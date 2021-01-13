@@ -1,0 +1,21 @@
+hey sofia
+hi
+hello
+hey
+are you a robot
+how are you doing
+close
+exit
+open browser
+play
+pause
+pause music
+play music
+next song
+next track
+next
+previous song
+previous track
+previous
+stop music
+stop
